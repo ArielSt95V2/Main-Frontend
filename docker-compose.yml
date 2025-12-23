@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:8000/auth
+    command: npm run dev
