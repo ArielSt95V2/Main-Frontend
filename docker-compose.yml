@@ -1,13 +1,20 @@
 services:
   web:
     build: .
+    container_name: main-frontend
     volumes:
       - .:/app
       - /app/node_modules
       - /app/.next
-    ports:
-      - "3000:3000"
+    env_file:
+      - .env.local
     environment:
       NODE_ENV: development
-      NEXT_PUBLIC_API_URL: http://localhost:8000/auth
+      PORT: 3000
+      HOSTNAME: "0.0.0.0"
+      NEXT_PUBLIC_DOMAIN: localhost:3000  # ✅ Match backend DOMAIN (no protocol)
+      NEXT_PUBLIC_HOST: http://localhost:8000
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api
+    ports:
+      - "3000:3000"  # Expose directly for standalone testing
     command: npm run dev
