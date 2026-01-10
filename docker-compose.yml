@@ -1,13 +1,13 @@
 services:
-  web:
+  standalone-main-frontend:
     build: .
-    container_name: main-frontend
+    container_name: standalone-main-frontend
     volumes:
       - .:/app
       - /app/node_modules
       - /app/.next
     env_file:
-      - .env.local
+      - .env
     environment:
       NODE_ENV: development
       PORT: 3000
