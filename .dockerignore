@@ -1,5 +1,4 @@
 node_modules
-.next
 .git
 .gitignore
 README.md
@@ -9,3 +8,5 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 *.pem
+# Note: .next is NOT excluded - needed for production builds
+# For dev builds, volumes override this anyway

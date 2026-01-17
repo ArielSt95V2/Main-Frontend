@@ -1,0 +1,54 @@
+# Stage 1: Builder - Install dependencies and build the application
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (dev dependencies needed for build)
+RUN npm ci && npm cache clean --force
+
+# Copy source code
+COPY . .
+
+# Build the Next.js application with standalone output
+RUN npm run build
+
+# Stage 2: Runner - Minimal runtime image
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+# Install wget for healthchecks
+RUN apk add --no-cache wget
+
+# Set production environment
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Create a non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copy standalone build output from builder
+# Next.js standalone output structure:
+# - .next/standalone/ contains the server files
+# - .next/static/ contains static assets
+# - public/ contains public assets
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
+EXPOSE 3000
+
+# Set working directory to where server.js is located
+WORKDIR /app
+
+# Run the production server (server.js is in the standalone directory)
+CMD ["node", "server.js"]
