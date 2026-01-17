@@ -3,6 +3,18 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Accept build arguments for Next.js public environment variables
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_DOMAIN
+ARG NEXT_PUBLIC_HOST
+ARG NEXT_PUBLIC_REDIRECT_URL
+
+# Set them as environment variables for the build
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_DOMAIN=${NEXT_PUBLIC_DOMAIN}
+ENV NEXT_PUBLIC_HOST=${NEXT_PUBLIC_HOST}
+ENV NEXT_PUBLIC_REDIRECT_URL=${NEXT_PUBLIC_REDIRECT_URL}
+
 # Copy package files
 COPY package*.json ./
 
