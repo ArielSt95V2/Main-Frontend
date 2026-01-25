@@ -17,6 +17,11 @@ interface CreateUserResponse {
 	user: User;
 }
 
+interface PairingResponse {
+	pairing_code: string;
+	expires_in: number;
+}
+
 const authApiSlice = apiSlice.injectEndpoints({
 	endpoints: builder => ({
 		retrieveUser: builder.query<User, void>({
@@ -90,6 +95,13 @@ const authApiSlice = apiSlice.injectEndpoints({
 				body: { uid, token, new_password, re_new_password },
 			}),
 		}),
+		// Device pairing
+		startPairing: builder.mutation<PairingResponse, void>({
+			query: () => ({
+				url: '/pairing/start/',
+				method: 'POST',
+			}),
+		}),
 	}),
 });
 
@@ -103,4 +115,5 @@ export const {
 	useActivationMutation,
 	useResetPasswordMutation,
 	useResetPasswordConfirmMutation,
+	useStartPairingMutation,
 } = authApiSlice;
