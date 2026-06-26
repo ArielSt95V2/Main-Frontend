@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useStartPairingMutation } from '@/redux/features/authApiSlice';
+import { mintTraceId } from '@/lib/traceId';
+import { createLogger } from '@/lib/logger';
 import Spinner from '@/components/common/Spinner';
 
 interface DevicePairingProps {
@@ -16,13 +18,19 @@ export default function DevicePairing({ onPairingComplete }: DevicePairingProps)
 
   const generateCode = useCallback(async () => {
     setError(null);
+    const traceId = mintTraceId();
+    const log = createLogger('pairing.device', traceId);
+    log.info('click.generate', 'Generate pairing code clicked');
     try {
-      const result = await startPairing().unwrap();
+      const result = await startPairing({ traceId }).unwrap();
       setPairingCode(result.pairing_code);
       setExpiresIn(result.expires_in);
+      log.info('code.generated', 'Pairing code generated', {
+        metadata: { expires_in: result.expires_in },
+      });
     } catch (err) {
       setError('Failed to generate pairing code. Please try again.');
-      console.error('Pairing error:', err);
+      log.error('code.generate.failed', 'Failed to generate pairing code');
     }
   }, [startPairing]);
 

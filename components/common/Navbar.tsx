@@ -7,6 +7,8 @@ import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { useLogoutMutation } from "@/redux/features/authApiSlice";
 import { logout as setLogout } from "@/redux/features/authSlice";
 import { NavLink } from "@/components/common";
+import { mintTraceId } from "@/lib/traceId";
+import { createLogger } from "@/lib/logger";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -17,10 +19,18 @@ export default function Navbar() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   const handleLogout = () => {
-    logout(undefined)
+    const traceId = mintTraceId();
+    const log = createLogger("auth.logout", traceId);
+    log.info("click.logout", "Logout clicked");
+  
+    logout({ traceId })
       .unwrap()
       .then(() => {
+        log.info("logout.ui.success", "Logout succeeded; session cleared");
         dispatch(setLogout());
+      })
+      .catch(() => {
+        log.error("logout.ui.failed", "Logout failed");
       });
   };
 

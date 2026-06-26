@@ -8,6 +8,9 @@ import useDeviceSocket, {
   type ConnectedDevice,
 } from "@/hooks/use-device-socket";
 
+import { mintTraceId } from "@/lib/traceId";
+import { createLogger } from "@/lib/logger";
+
 type DeviceListItemProps = {
   device: ConnectedDevice;
   commandsReady: boolean;
@@ -15,6 +18,7 @@ type DeviceListItemProps = {
     deviceId: string,
     command: string,
     payload?: unknown,
+    traceId?: string,
   ) => Promise<CommandResult>;
 };
 
@@ -31,30 +35,61 @@ function DeviceListItem({
   const normalized = normalizeConnectedDevice(device) ?? device;
   const displayName = normalized.device_name.trim() || normalized.device_id;
 
-  const runCommand = async (command: string) => {
+  const runCommand = async (
+    command: string,
+    traceId: string,
+    log: ReturnType<typeof createLogger>,
+    stepPrefix: "ping" | "get_status",
+  ) => {
     setBusy(true);
     setLastResult(null);
     setLastError(null);
     try {
-      const response = await sendCommand(normalized.device_id, command);
+      const response = await sendCommand(
+        normalized.device_id,
+        command,
+        undefined,
+        traceId,
+      );
       if (response.error) {
         setLastError(response.error);
+        log.error(`${stepPrefix}.ui.failed`, "Command returned error", {
+          userMessage: response.error,
+          metadata: { request_id: response.request_id },
+        });
       } else {
         setLastResult(JSON.stringify(response.result, null, 2));
+        log.info(`${stepPrefix}.ui.success`, "Command succeeded", {
+          metadata: { request_id: response.request_id },
+        });
       }
     } catch (err) {
-      setLastError(err instanceof Error ? err.message : "Command failed");
+      const message = err instanceof Error ? err.message : "Command failed";
+      setLastError(message);
+      log.error(`${stepPrefix}.ui.failed`, message, {
+        userMessage: message,
+      });
     } finally {
       setBusy(false);
     }
   };
 
   const handlePing = () => {
-    void runCommand("ping");
+    const traceId = mintTraceId();
+    const log = createLogger("relay.commands", traceId);
+    log.info("click.ping", "Ping device clicked", {
+      metadata: { device_id: normalized.device_id },
+    });
+    void runCommand("ping", traceId, log, "ping");
   };
 
   const handleGetStatus = () => {
-    void runCommand("get_status");
+    const traceId = mintTraceId();
+    const log = createLogger("relay.commands", traceId);
+    log.info("click.get_status", "Get status clicked", {
+      metadata: { device_id: normalized.device_id },
+    });
+    void runCommand("get_status", traceId, log, "get_status");
   };
 
   return (

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { createLogger } from "@/lib/logger";
 
 // =============================================================================
 // Types
@@ -143,7 +144,6 @@ export default function useDeviceSocket(
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log("[DeviceSocket] Connected, authenticating...");
         setState((prev) => ({ ...prev, connected: true, error: null }));
 
         // Send authentication message
@@ -161,7 +161,6 @@ export default function useDeviceSocket(
 
           switch (data.type) {
             case "auth_success":
-              console.log("[DeviceSocket] Authenticated");
               setState((prev) => ({ ...prev, authenticated: true }));
               onAuthenticated?.();
               break;
@@ -176,7 +175,6 @@ export default function useDeviceSocket(
               break;
 
             case "device_list":
-              console.log("[DeviceSocket] Device list:", data.devices);
               setState((prev) => ({
                 ...prev,
                 devices: normalizeConnectedDevices(data.devices),
@@ -218,7 +216,6 @@ export default function useDeviceSocket(
               break;
 
             case "response":
-              console.log("[DeviceSocket] Command response:", data.request_id);
               const pending = pendingCommandsRef.current.get(data.request_id);
               if (pending) {
                 clearTimeout(pending.timeout);
@@ -249,7 +246,6 @@ export default function useDeviceSocket(
               break;
 
             default:
-              console.log("[DeviceSocket] Unknown message type:", data.type);
           }
         } catch (e) {
           console.error("[DeviceSocket] Failed to parse message:", e);
@@ -257,7 +253,6 @@ export default function useDeviceSocket(
       };
 
       ws.onclose = (event) => {
-        console.log("[DeviceSocket] Disconnected:", event.code, event.reason);
         setState((prev) => ({
           ...prev,
           connected: false,
@@ -314,6 +309,7 @@ export default function useDeviceSocket(
       deviceId: string,
       command: string,
       payload?: unknown,
+      traceId?: string,
       timeoutMs = 30000,
     ): Promise<CommandResult> => {
       return new Promise((resolve, reject) => {
@@ -328,7 +324,12 @@ export default function useDeviceSocket(
         }
 
         const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
+        if (traceId) {
+          const log = createLogger("relay.commands", traceId);
+          log.info("command.send", "Sending relay command", {
+            metadata: { command, request_id: requestId, device_id: deviceId },
+          });
+        }
         // Set up timeout
         const timeout = setTimeout(() => {
           pendingCommandsRef.current.delete(requestId);
@@ -346,6 +347,7 @@ export default function useDeviceSocket(
             command,
             request_id: requestId,
             payload,
+            ...(traceId ? { trace_id: traceId } : {}),
           }),
         );
       });

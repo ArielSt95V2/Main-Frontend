@@ -20,9 +20,9 @@ export default function List({ config }: Props) {
 						</p>
 					</div>
 					<div>
-						<p className='text-sm font-semibold leading-6 text-gray-900'>
+						<div className='text-sm font-semibold leading-6 text-gray-900'>
 							{value || <Spinner sm />}
-						</p>
+						</div>
 					</div>
 				</li>
 			))}
