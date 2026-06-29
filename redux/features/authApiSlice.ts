@@ -11,6 +11,7 @@ interface SocialAuthArgs {
   provider: string;
   state: string;
   code: string;
+  traceId?: string;
 }
 
 interface CreateUserResponse {
@@ -33,7 +34,7 @@ const authApiSlice = apiSlice.injectEndpoints({
       query: () => "/users/me/",
     }),
     socialAuthenticate: builder.mutation<CreateUserResponse, SocialAuthArgs>({
-      query: ({ provider, state, code }) => ({
+      query: ({ provider, state, code, traceId }) => ({
         url: `/o/${provider}/?state=${encodeURIComponent(
           state,
         )}&code=${encodeURIComponent(code)}`,
@@ -41,7 +42,9 @@ const authApiSlice = apiSlice.injectEndpoints({
         headers: {
           Accept: "application/json",
           "Content-Type": "application/x-www-form-urlencoded",
+          ...traceRequestHeaders(traceId),
         },
+        traceId,
       }),
     }),
     login: builder.mutation({
@@ -77,10 +80,12 @@ const authApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     activation: builder.mutation({
-      query: ({ uid, token }) => ({
+      query: ({ uid, token, traceId }) => ({
         url: "/users/activation/",
         method: "POST",
         body: { uid, token },
+        headers: traceRequestHeaders(traceId),
+        traceId,
       }),
     }),
     resetPassword: builder.mutation({

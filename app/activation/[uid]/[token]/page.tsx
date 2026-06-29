@@ -1,25 +1,41 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useActivationMutation } from '@/redux/features/authApiSlice';
 import { toast } from 'react-toastify';
+import { mintTraceId } from '@/lib/traceId';
+import { createLogger } from '@/lib/logger';
 
 export default function Page() {
 	const router = useRouter();
 	const params = useParams();
 	const [activation] = useActivationMutation();
+	const startedRef = useRef(false);
 
 	useEffect(() => {
+		if (startedRef.current) return;
+
 		const uid = params?.uid as string;
 		const token = params?.token as string;
+		if (!uid || !token) return;
 
-		activation({ uid, token })
+		startedRef.current = true;
+		const traceId = mintTraceId();
+		const log = createLogger('auth.activation', traceId);
+
+		log.info('activation.start', 'Account activation started');
+
+		activation({ uid, token, traceId })
 			.unwrap()
 			.then(() => {
+				log.info('activation.ui.success', 'Account activated');
 				toast.success('Account activated');
 			})
 			.catch(() => {
+				log.error('activation.ui.failed', 'Account activation failed', {
+					userMessage: 'Failed to activate account',
+				});
 				toast.error('Failed to activate account');
 			})
 			.finally(() => {

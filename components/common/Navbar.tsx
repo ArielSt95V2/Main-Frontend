@@ -22,7 +22,7 @@ export default function Navbar() {
     const traceId = mintTraceId();
     const log = createLogger("auth.logout", traceId);
     log.info("click.logout", "Logout clicked");
-  
+
     logout({ traceId })
       .unwrap()
       .then(() => {
@@ -94,7 +94,7 @@ export default function Navbar() {
                 </Disclosure.Button>
               </div>
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                <div className="flex flex-shrink-0 items-center">
+                <div className="flex shrink-0 items-center">
                   <NavLink href="/" isBanner>
                     Full Auth
                   </NavLink>
