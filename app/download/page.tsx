@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 const INSTALLER_URL =
-  "https://space.tesseriver.com/releases/Tesseriver-App-Setup-1.0.2.exe";
+  "https://space.tesseriver.com/releases/Tesseriver-App-Setup-latest.exe";
 
 export const metadata: Metadata = {
   title: "Download Tesseriver App",
