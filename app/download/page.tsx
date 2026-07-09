@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 const INSTALLER_URL =
   "https://space.tesseriver.com/releases/Tesseriver-App-Setup-latest.exe";
 
+const BETA_INSTALLER_URL =
+  "https://space.tesseriver.com/releases/Tesseriver-App-Setup-beta.exe";
+
 export const metadata: Metadata = {
   title: "Download Tesseriver App",
   description: "Download the Tesseriver desktop app for Windows",
@@ -20,12 +23,20 @@ export default function DownloadPage() {
           from the web dashboard.
         </p>
 
-        <a
-          href={INSTALLER_URL}
-          className="mt-8 inline-block rounded-md bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
-        >
-          Download for Windows (64-bit)
-        </a>
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <a
+            href={INSTALLER_URL}
+            className="inline-block rounded-md bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+          >
+            Download for Windows (64-bit)
+          </a>
+          <a
+            href={BETA_INSTALLER_URL}
+            className="inline-block rounded-md border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
+          >
+            Download beta build (for testing)
+          </a>
+        </div>
 
         <section className="mt-10">
           <h2 className="text-xl font-semibold text-gray-900">
