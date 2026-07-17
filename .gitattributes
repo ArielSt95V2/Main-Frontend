@@ -1,0 +1,9 @@
+# Force Linux line endings (LF) for all text files, in git storage and on disk.
+# Prevents phantom "modified" files when the Linux dev container (LF) and the
+# Windows host (CRLF) interpret line endings differently. Everything here runs
+# in containers, so LF is the correct convention. Travels with the repo.
+* text=auto eol=lf
+
+# Shell scripts run on the Linux droplet — force LF so shebangs don't break
+# (a CRLF shebang makes /usr/bin/env look for `bash\r`, which fails).
+*.sh text eol=lf
